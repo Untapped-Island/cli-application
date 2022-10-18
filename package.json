@@ -4,7 +4,7 @@
   "description": "<!-- Enter a description for the repository -->",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node inquirer/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,6 @@
   "homepage": "https://github.com/Untapped-Island/inquirer#readme",
   "dependencies": {
     "commander": "^9.4.1",
-    "inquirer": "^9.1.4"
+    "inquirer": "^8.2.4"
   }
 }
