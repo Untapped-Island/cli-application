@@ -17,8 +17,7 @@ No Tests for the CLI
 
 ## Further Goals
 <!-- Any further goals -->
-Stretch Goals would be to create routes for all colors (cards with dual or more than one color type), create a route for all types, subtypes, and manacost
-
+Stretch Goals would be to create routes for all colors (cards with dual or more than one color type), create a route for all types, subtypes, and manacost.
 
 ## Structure Diagram
 <!-- Is there a diagram for this project? Should there be one? -->
