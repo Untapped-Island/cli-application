@@ -51,15 +51,15 @@ const confirmCard = {
 const confirmCardtoPortfolio = {
   type: 'confirm',
   name: 'Add to portfolio',
-  message: 'Add to portfolio?',
+  message: 'Add card to portfolio?',
 }
 
-const restartSearch = {
-  type: 'list',
-  name: 'Look for another card',
-  message: 'Add to portfolio?',
-  choices: ['yes', 'no']
-}
+// const restartSearch = {
+//   type: 'list',
+//   name: 'Look for another card',
+//   message: 'Add to portfolio?',
+//   choices: ['yes', 'no']
+// }
 
 const colorConfirmation = {
   type: 'confirm',
@@ -128,7 +128,7 @@ function cardFound() {
   })
 }
 function anotherCardSearch() {
-  inquirer.prompt().then((answers) => {
+  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
     console.log(answers)
     mainMenu()
   })
@@ -136,27 +136,28 @@ function anotherCardSearch() {
 
 function colorSearch() { // color
   inquirer.prompt(searchColorQuery).then((answers) => {
-    if (answers.choices === 'Island') {
+    console.log(answers.choice)
+    if (answers.choice === 'Island') {
       console.log(`You are looking at Island Card`);
       selectedColorSearch();
     }
-    if (answers.choices === 'Mountain') {
+    if (answer.choice === 'Mountain') {
       console.log(`You are looking at Mountain Card`);
       selectedColorSearch();
     }
-    if (answers.choices === 'Swamp') {
+    if (answers.choice === 'Swamp') {
       console.log(`You are looking at Island Card`);
       selectedColorSearch();
     }
-    if (answers.choices === 'Forest') {
+    if (answers.choice === 'Forest') {
       console.log(`You are looking at Forest Card`);
       selectedColorSearch();
     }
-    if (answers.choices === 'Plains') {
+    if (answers.choice === 'Plains') {
       console.log(`You are looking at Plains Card`);
       selectedColorSearch();
     }
-    if (answers.choices === 'Artifact') {
+    if (answers.choice === 'Artifact') {
       console.log(`You are looking at Artifact Card`);
       selectedColorSearch();
     }
