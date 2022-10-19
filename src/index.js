@@ -21,6 +21,12 @@ const searchCardQuery = {
   choices: ['name', 'color']
 }
 
+const searchNameQuery = {
+  type: 'checkbox',
+  name: 'name',
+  message: 'Pick a name'
+}
+
 function main() {
   console.log('Welcome to the Untapped Island, Gather your cards and prepare for battle!');
   mainMenu();
@@ -49,6 +55,7 @@ function cardSearch() {
     } else {
       console.log(`Look for the card by ${answers.value}`);
       // portfolioSearch();
+      // nameSearch();
     };
   });
 }
