@@ -68,6 +68,10 @@ function main() {
 }
 main();
 
+// function userSignIn() {
+
+// }
+
 function mainMenu() {
   inquirer.prompt(magicTheGathering).then((answers) => {
     if (answers.search === 'database') {
