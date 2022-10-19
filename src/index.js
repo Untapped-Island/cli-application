@@ -141,7 +141,7 @@ function colorSearch() { // color
       console.log(`You are looking at Island Card`);
       selectedColorSearch();
     }
-    if (answer.choice === 'Mountain') {
+    if (answers.choice === 'Mountain') {
       console.log(`You are looking at Mountain Card`);
       selectedColorSearch();
     }
