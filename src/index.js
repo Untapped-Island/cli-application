@@ -1,4 +1,5 @@
 const inquirer = require('inquirer');
+const axios = require('axios');
 
 const colorList = {
   type: 'list',
@@ -48,12 +49,12 @@ const confirmCardtoPortfolio = {
   message: 'Add card to portfolio?',
 }
 
-  const searchColorQuery = {
-    type: 'checkbox',
-    name: 'choice',
-    message: 'Pick a color!!',
-    choices: ['Red', 'Green', 'Blue', 'White', 'Black']
-  }
+const searchColorQuery = {
+  type: 'checkbox',
+  name: 'choice',
+  message: 'Pick a color!!',
+  choices: ['Red', 'Green', 'Blue', 'White', 'Black']
+}
 
 const colorConfirmation = {
   type: 'confirm',
@@ -143,12 +144,21 @@ function colorSearch() { // color
       colors = colors | colorsEnum[color]
     })
     console.log(colors);
+    selectedColorSearch(colors);
   });
 };
 
+const cardsByColorList = {
+  type: 'list',
+  name: 'List of cards with the same color',
+  message: 'List of card(s) with the same color selected',
+  // choices: [`${choice1}, ${choice2}, ${choice3}, ${choice4}, ${choice5}`]
+  choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
+}
 
-function selectedColorSearch() {
-  inquirer.prompt(colorConfirmation).then((answers) => {
+function selectedColorSearch(colors) {
+  // API CALL ---> Need the list of cards with the color selected..... The list of cards might be very very very long....
+  inquirer.prompt(cardsByColorList).then((answers) => {
     console.log(answers);
   })
 }
