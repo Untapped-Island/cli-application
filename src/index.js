@@ -23,8 +23,9 @@ const searchCardQuery = {
 
 const searchNameQuery = {
   type: 'checkbox',
-  name: 'name',
-  message: 'Pick a name'
+  name: 'choice',
+  message: 'Pick a name!!',
+  choices: ['Island', 'Mountain', 'Swamp', 'Forest', 'Plains', 'Artifact']
 }
 
 function main() {
@@ -52,13 +53,25 @@ function cardSearch() {
     if (answers.card === 'name') {
       console.log(`Look for the card by ${answers.value}`);
       // databaseSearch();
+      nameSearch();
     } else {
       console.log(`Look for the card by ${answers.value}`);
       // portfolioSearch();
-      // nameSearch();
+      nameSearch();
     };
   });
 }
+
+function nameSearch() {
+  inquirer.prompt(searchNameQuery).then((answers) => {
+    if (answers.choice === 'Island') {
+      console.log(`You are looking at Island Card`);
+    } 
+    if (answers.choice === 'Mountain') {
+      console.log(`You are looking at Mountain Card`);
+    } 
+  });
+};
 // --------------------------------------------------------
 
 // inquirer
