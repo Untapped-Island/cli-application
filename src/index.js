@@ -21,11 +21,50 @@ const searchCardQuery = {
   choices: ['name', 'color']
 }
 
-const searchNameQuery = {
+const searchColorQuery = {
   type: 'checkbox',
   name: 'choice',
   message: 'Pick a color!!',
   choices: ['Island', 'Mountain', 'Swamp', 'Forest', 'Plains', 'Artifact']
+}
+
+const searchNameQuery = {
+  type: 'input',
+  name: 'input',
+  message: 'type the name of card',
+  choices: 'input'
+}
+
+const searchNameListQuery = {
+  type: 'list',
+  name: 'List of cards with input',
+  message: 'List of card(s) with similar name',
+  choices: ['{choice1}, {choice2}, {choice3}, {choice4}, {choice5}']
+}
+
+const confirmCard = {
+  type: 'confirm',
+  name: 'Is this the card?',
+  message: 'Is this the card you are looking for',
+}
+
+const confirmCardtoPortfolio = {
+  type: 'confirm',
+  name: 'Add to portfolio',
+  message: 'Add to portfolio?',
+}
+
+const restartSearch = {
+  type: 'list',
+  name: 'Look for another card',
+  message: 'Add to portfolio?',
+  choices: ['yes', 'no']
+}
+
+const colorConfirmation = {
+  type: 'confirm',
+  name: 'do you want to add it to your portfolio?',
+  message: 'Add to portfolio',
 }
 
 function main() {
@@ -51,61 +90,82 @@ function mainMenu() {
 function cardSearch() {
   inquirer.prompt(searchCardQuery).then((answers) => {
     if (answers.card === 'name') {
-      console.log(`Look for the card by ${answers.value}`);
+      console.log(`Look for the card by name`);
       // databaseSearch();
       nameSearch();
-    } else {
-      console.log(`Look for the card by ${answers.value}`);
+    } else if (answers.card === 'color') {
+      console.log(`Look for the card by color`);
       // portfolioSearch();
-      nameSearch();
+      colorSearch();
     };
   });
 }
 
-function nameSearch() {
+function nameSearch() { // name
   inquirer.prompt(searchNameQuery).then((answers) => {
-    if (answers.choice === 'Island') {
-      console.log(`You are looking at Island Card`);
-    } 
-    if (answers.choice === 'Mountain') {
-      console.log(`You are looking at Mountain Card`);
-    } 
+    console.log(answers)
+    nameListSearch();
   });
 };
-// --------------------------------------------------------
 
-// inquirer
-// .prompt([
-//   // {
-//   //   name: 'menu',
-//   //   type: 'list',
-//   //   message: 'Search database or personal cards',
-//   //   choices: ['search database', 'search my cards']
-//   // },
-//   {
-//     name: 'search',
-//     type: 'list',
-//     message: 'Search By',
-//     choices: ['name', 'color(s)']
-//   },
-//   {
-//     name: 'cardName',
-//     type: 'text',
-//     message: 'Type in search',
-//   },
-//   {
-//     name: 'color',
-//     type: 'list',
-//     message: 'Search By',
-//     choices: ['name', 'color(s)']
-//   },
-// ])
-// .then((answers) => {
-//     console.log(answers.menu);
-    // console.log(answers.search);
-    // console.log(answers.name);
+function nameListSearch() {
+  inquirer.prompt(searchNameListQuery).then((answers) => {
+    console.log(answers)
+    selectFromList();
+  })
+}
 
-// });
+function selectFromList() {
+  inquirer.prompt(confirmCard).then((answers) => {
+    console.log(answers)
+    cardFound();
+  })
+}
+function cardFound() {
+  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
+    console.log(answers)
+    anotherCardSearch()
+  })
+}
+function anotherCardSearch() {
+  inquirer.prompt().then((answers) => {
+    console.log(answers)
+    mainMenu()
+  })
+}
+
+function colorSearch() { // color
+  inquirer.prompt(searchColorQuery).then((answers) => {
+    if (answers.choices === 'Island') {
+      console.log(`You are looking at Island Card`);
+      selectedColorSearch();
+    }
+    if (answers.choices === 'Mountain') {
+      console.log(`You are looking at Mountain Card`);
+      selectedColorSearch();
+    }
+    if (answers.choices === 'Swamp') {
+      console.log(`You are looking at Island Card`);
+      selectedColorSearch();
+    }
+    if (answers.choices === 'Forest') {
+      console.log(`You are looking at Forest Card`);
+      selectedColorSearch();
+    }
+    if (answers.choices === 'Plains') {
+      console.log(`You are looking at Plains Card`);
+      selectedColorSearch();
+    }
+    if (answers.choices === 'Artifact') {
+      console.log(`You are looking at Artifact Card`);
+      selectedColorSearch();
+    }
+  });
+};
 
 
-
+function selectedColorSearch() {
+  inquirer.prompt(colorConfirmation).then((answers) => {
+    console.log(answers);
+  })
+}
