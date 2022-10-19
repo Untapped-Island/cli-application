@@ -21,12 +21,6 @@ const searchCardQuery = {
   choices: ['name', 'color']
 }
 
-const searchColorQuery = {
-  type: 'checkbox',
-  name: 'choice',
-  message: 'Pick a color!!',
-  choices: ['Island', 'Mountain', 'Swamp', 'Forest', 'Plains', 'Artifact']
-}
 
 const searchNameQuery = {
   type: 'input',
@@ -54,12 +48,12 @@ const confirmCardtoPortfolio = {
   message: 'Add card to portfolio?',
 }
 
-// const restartSearch = {
-//   type: 'list',
-//   name: 'Look for another card',
-//   message: 'Add to portfolio?',
-//   choices: ['yes', 'no']
-// }
+  const searchColorQuery = {
+    type: 'checkbox',
+    name: 'choice',
+    message: 'Pick a color!!',
+    choices: ['Red', 'Green', 'Blue', 'White', 'Black']
+  }
 
 const colorConfirmation = {
   type: 'confirm',
@@ -137,30 +131,18 @@ function anotherCardSearch() {
 function colorSearch() { // color
   inquirer.prompt(searchColorQuery).then((answers) => {
     console.log(answers.choice)
-    if (answers.choice === 'Island') {
-      console.log(`You are looking at Island Card`);
-      selectedColorSearch();
+    const colorsEnum = {
+      'Red': 1 << 0,
+      'Green': 1 << 1,
+      'Blue': 1 << 2,
+      'White': 1 << 3,
+      'Black': 1 << 4,
     }
-    if (answer.choice === 'Mountain') {
-      console.log(`You are looking at Mountain Card`);
-      selectedColorSearch();
-    }
-    if (answers.choice === 'Swamp') {
-      console.log(`You are looking at Island Card`);
-      selectedColorSearch();
-    }
-    if (answers.choice === 'Forest') {
-      console.log(`You are looking at Forest Card`);
-      selectedColorSearch();
-    }
-    if (answers.choice === 'Plains') {
-      console.log(`You are looking at Plains Card`);
-      selectedColorSearch();
-    }
-    if (answers.choice === 'Artifact') {
-      console.log(`You are looking at Artifact Card`);
-      selectedColorSearch();
-    }
+    let colors = 0;
+    answers.choice.forEach((color) => {
+      colors = colors | colorsEnum[color]
+    })
+    console.log(colors);
   });
 };
 
