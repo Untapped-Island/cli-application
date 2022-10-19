@@ -8,6 +8,9 @@ This repository is to run our CLI our backends interface. This is suppose to let
 
 The structure of the cli is intended to help search the database and make api calls to get the specific card or cards. Once the card(s) are found user can add them to their portfolio and either quit out of the application or continue to add more cards to their profile.
 
+[https://github.com/SBoudrias/Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
+[https://www.npmjs.com/package/inquirer](https://www.npmjs.com/package/inquirer)
+
 ## Tests
 <!-- Are there any tests? How was it tested? -->
 
