@@ -24,7 +24,7 @@ const searchCardQuery = {
 const searchNameQuery = {
   type: 'checkbox',
   name: 'choice',
-  message: 'Pick a name!!',
+  message: 'Pick a color!!',
   choices: ['Island', 'Mountain', 'Swamp', 'Forest', 'Plains', 'Artifact']
 }
 
