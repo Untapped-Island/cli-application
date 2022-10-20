@@ -1,23 +1,46 @@
+'use strict';
+
+require('dotenv').config()
+
 const inquirer = require('inquirer');
 const axios = require('axios');
+axios.defaults.baseURL = 'http://localhost:3000'
 
-const colorList = {
-  type: 'list',
-  name: 'listofcolors',
-  message: 'Which color is your card?',
-  choices: ['white', 'blue', 'black', 'red', 'green']
-};
+async function getCardsByName(query) {
+  try {
+    const response = await axios.get(`/cards?search=${query}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getCardsByColor(colorInt) {
+  try {
+    const response = await axios.get(`/cards?colors=${colorInt}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// const colorList = {
+//   type: 'list',
+//   name: 'colorQuery',
+//   message: 'Which color is your card?',
+//   choices: ['white', 'blue', 'black', 'red', 'green']
+// };
 
 const magicTheGathering = {
   type: 'list',
-  name: 'search',
+  name: 'where',
   message: 'Where are we looking?',
   choices: ['database', 'portfolio']
 }
 
 const searchCardQuery = {
   type: 'list',
-  name: 'card',
+  name: 'searchBy',
   message: 'How do you want to search?',
   choices: ['name', 'color']
 }
@@ -25,22 +48,15 @@ const searchCardQuery = {
 
 const searchNameQuery = {
   type: 'input',
-  name: 'input',
+  name: 'cardNameQuery',
   message: 'type the name of card',
   choices: 'input'
 }
 
-const searchNameListQuery = {
-  type: 'list',
-  name: 'List of cards with input',
-  message: 'List of card(s) with similar name',
-  choices: ['{choice1}, {choice2}, {choice3}, {choice4}, {choice5}']
-}
-
 const confirmCard = {
   type: 'confirm',
-  name: 'Is this the card?',
-  message: 'Is this the card you are looking for',
+  name: 'confirmed',
+  message: 'Is this the card you are looking for?',
 }
 
 const confirmCardtoPortfolio = {
@@ -74,8 +90,8 @@ main();
 
 function mainMenu() {
   inquirer.prompt(magicTheGathering).then((answers) => {
-    if (answers.search === 'database') {
-      console.log('Look inside the database');
+    if (answers.where === 'database') {
+      console.log(answers);
       cardSearch();
       // databaseSearch(‘https://ourislandsapi.com/cards/’);
     } else {
@@ -88,11 +104,11 @@ function mainMenu() {
 
 function cardSearch() {
   inquirer.prompt(searchCardQuery).then((answers) => {
-    if (answers.card === 'name') {
-      console.log(`Look for the card by name`);
+    if (answers.searchBy === 'name') {
+      console.log(answers);
       // databaseSearch();
       nameSearch();
-    } else if (answers.card === 'color') {
+    } else if (answers.searchBy === 'color') {
       console.log(`Look for the card by color`);
       // portfolioSearch();
       colorSearch();
@@ -100,21 +116,38 @@ function cardSearch() {
   });
 }
 
-function nameSearch() { // name
-  inquirer.prompt(searchNameQuery).then((answers) => {
-    console.log(answers)
-    nameListSearch();
+function nameSearch() {
+  inquirer.prompt(searchNameQuery).then(async (answers) => {
+    console.log('search query', answers)
+    const results = await getCardsByName(answers.cardNameQuery)
+    const parsedResults = results.data.map(result => {
+      return {
+        value: result.id,
+        name: result.name
+      }
+    })
+    nameListSearch(parsedResults);
   });
 };
 
-function nameListSearch() {
-  inquirer.prompt(searchNameListQuery).then((answers) => {
-    console.log(answers)
-    selectFromList();
+const searchNameListQuery = { // Needs cards from database------->
+  type: 'list',
+  name: 'card',
+  message: 'List of card(s) with similar name',
+  loop: false,
+}
+
+function nameListSearch(list) {
+  inquirer.prompt({
+    ...searchNameListQuery,
+    choices: list
+  }).then((answers) => {
+    selectFromList(answers.card);
   })
 }
 
-function selectFromList() {
+function selectFromList(card) {
+  console.log(card)
   inquirer.prompt(confirmCard).then((answers) => {
     console.log(answers)
     cardFound();
@@ -134,7 +167,7 @@ function anotherCardSearch() {
 }
 
 function colorSearch() { // color
-  inquirer.prompt(searchColorQuery).then((answers) => {
+  inquirer.prompt(searchColorQuery).then(async (answers) => {
     console.log(answers.choice)
     const colorsEnum = {
       'Red': 1 << 0,
@@ -148,21 +181,31 @@ function colorSearch() { // color
       colors = colors | colorsEnum[color]
     })
     console.log(colors);
-    selectedColorSearch(colors);
+    const results = await getCardsByColor(colors)
+    const parsedResults = results.data.map(result => {
+      return {
+        value: result.id,
+        name: result.name
+      }
+    })
+    selectedColorSearch(parsedResults);
   });
 };
 
-const cardsByColorList = {
+const cardsByColorList = {   // Needs api call to database ---------------------------------------------
   type: 'list',
   name: 'List of cards with the same color',
   message: 'List of card(s) with the same color selected',
   // choices: [`${choice1}, ${choice2}, ${choice3}, ${choice4}, ${choice5}`]
-  choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
+  // choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
 }
 
-function selectedColorSearch(colors) {
+function selectedColorSearch(list) {
   // API CALL ---> Need the list of cards with the color selected..... The list of cards might be very very very long....
-  inquirer.prompt(cardsByColorList).then((answers) => {
+  inquirer.prompt({
+    ...cardsByColorList,
+    choices: list
+  }).then((answers) => {
     console.log(answers);
   })
 }
