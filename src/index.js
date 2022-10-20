@@ -3,7 +3,7 @@
 require('dotenv').config()
 
 const inquirer = require('inquirer');
-const axios = require('axios');
+const axios = require('axios')
 axios.defaults.baseURL = 'http://localhost:3000'
 
 async function getCardsByName(query) {
@@ -33,7 +33,31 @@ async function getCardById(id) {
   }
 }
 
-const userData = {};
+async function addCardToProfile(cardId, username) {
+  try {
+    const response = await axios.post(`users/${username}/cards`, {
+      card: cardId
+    })
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getEntirePortfolio(username) {
+  try {
+    const response = await axios.get(`/users/${username}/cards`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const userData = {
+  userId: null,
+  username: null,
+  token: null,
+};
 
 // const magicTheGathering = {
 //   type: 'list',
@@ -47,26 +71,6 @@ const searchCardQuery = {
   name: 'searchBy',
   message: 'How do you want to search?',
   choices: ['name', 'color']
-}
-
-
-const searchNameQuery = {
-  type: 'input',
-  name: 'cardNameQuery',
-  message: 'type the name of card',
-  choices: 'input'
-}
-
-const confirmCard = {
-  type: 'confirm',
-  name: 'confirmed',
-  message: 'Is this the card you are looking for?',
-}
-
-const confirmCardtoPortfolio = {
-  type: 'confirm',
-  name: 'Add to portfolio',
-  message: 'Add card to portfolio?',
 }
 
 const searchColorQuery = {
@@ -83,12 +87,12 @@ const colorConfirmation = {
 }
 
 function main() {
-  console.log('Welcome to the Untapped Island, Gather your cards and prepare for battle!');
+  console.log('Welcome to Untapped Island!');
   mainMenu();
 }
 main();
 
-async function userSignIn() {
+async function credentialsPrompt(isRegistering) {
   const answers = await inquirer.prompt([
     {
       type: 'input',
@@ -103,64 +107,64 @@ async function userSignIn() {
   ])
 
   try {
-    const response = await axios({
-      method: 'post',
-      url: '/signin',
-      auth: {
+    let response;
+    if (isRegistering) {
+      response = await axios.post('/signup', {
         username: answers.username,
         password: answers.password
-      }
-    })
-    userData.user = response.user
-    userData.token = response.accessToken
+      })
+    } else {
+      response = await axios({
+        method: 'post',
+        url: '/signin',
+        auth: {
+          username: answers.username,
+          password: answers.password
+        }
+      })
+    }
+    userData.userId = response.data.userId;
+    userData.username = response.data.user;
+    userData.token = response.data.accessToken;
+    axios.defaults.headers.common['Authorization'] = userData.token
   } catch (err) {
-    console.error(err.response.data)
+    console.error(err.response?.data.message || err)
   }
 }
 
-async function userRegister() {
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'username',
-      message: 'Enter a username:'
-    },
-    {
-      type: 'password',
-      name: 'password',
-      message: 'Enter a password:'
-    }
-  ])
-
-  const response = await axios.post('/signup', {
-    username: answers.username,
-    password: answers.password
-  })
-
-
-  userData.user = response.user
-  userData.token = response.accessToken
-}
 
 async function mainMenu() {
-  if (!userData.token) {
-    await userSignIn()
+  while (!userData.token) {
+    const signinOrRegister = await inquirer.prompt({
+      type: 'list',
+      name: 'choice',
+      message: 'Login or register for a new account?',
+      choices: [{name: 'Login', value: false}, {name: 'Register', value: true}]
+    })
+    await credentialsPrompt(signinOrRegister.choice)
   }
+
   inquirer.prompt(
     {
       type: 'list',
       name: 'where',
-      message: 'Where are we looking?',
-      choices: ['database', 'portfolio']
+      message: 'Select an option -',
+      choices: [{name: 'Search all cards', value: 'database'}, {name: 'Search my portfolio', value: 'portfolio'}]
     })
-    .then((answers) => {
+    .then(async (answers) => {
       if (answers.where === 'database') {
         console.log(answers);
         cardSearch();
-        // databaseSearch(‘https://ourislandsapi.com/cards/’);
-      } else {
-        console.log('Look inside your portfolio');
-        cardSearch();
+      } else if (answers.where === 'portfolio') {
+        try {
+          const portfolio = await getEntirePortfolio(userData.username)
+          for (let data of portfolio.data) {
+            console.log(data.card.name)
+          }
+        } catch (err) {
+          console.error(err)
+        }
+        // console.log('Look inside your portfolio');
         // portfolioSearch();
       };
     });
@@ -181,29 +185,37 @@ function cardSearch() {
 }
 
 function nameSearch() {
-  inquirer.prompt(searchNameQuery).then(async (answers) => {
-    console.log('search query', answers)
-    const results = await getCardsByName(answers.cardNameQuery)
-    const parsedResults = results.data.map(result => {
-      return {
-        value: result.id,
-        name: result.name
+  inquirer.prompt({
+    type: 'input',
+    name: 'cardNameQuery',
+    message: 'type the name of card',
+    choices: 'input'
+  }).then(async (answers) => {
+    try {
+      const results = await getCardsByName(answers.cardNameQuery)
+      if (results.data.length !== 0) {
+        const parsedResults = results.data.map(result => {
+          return {
+            value: result.id,
+            name: result.name
+          }
+        })
+        nameListSearch(parsedResults);
+      } else {
+        nameSearch()
       }
-    })
-    nameListSearch(parsedResults);
+    } catch (err) {
+      console.error(err)
+    }
   });
 };
 
-const searchNameListQuery = { // Needs cards from database------->
-  type: 'list',
-  name: 'card',
-  message: 'List of card(s) with similar name',
-  loop: false,
-}
-
 function nameListSearch(list) {
   inquirer.prompt({
-    ...searchNameListQuery,
+    type: 'list',
+    name: 'card',
+    message: 'List of card(s) with similar name',
+    loop: false,
     choices: list
   }).then((answers) => {
     selectFromList(answers.card);
@@ -213,23 +225,26 @@ function nameListSearch(list) {
 async function selectFromList(cardId) {
   const result = await getCardById(cardId)
   console.log(result.data)
-  inquirer.prompt(confirmCard).then((answers) => {
+  inquirer.prompt({
+    type: 'confirm',
+    name: 'confirmed',
+    message: 'Add card to portfolio?',
+  }).then((answers) => {
     console.log(answers)
-    cardFound();
-  })
-}
-function cardFound() {
-  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
-    console.log(answers)
-    anotherCardSearch()
-  })
-}
-function anotherCardSearch() {
-  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
-    console.log(answers)
+    if (answers.confirmed) {
+      addCardToProfile(cardId, userData.username)
+    }
     mainMenu()
   })
 }
+
+
+// function anotherCardSearch() {
+//   inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
+//     console.log(answers)
+//     mainMenu()
+//   })
+// }
 
 function colorSearch() { // color
   inquirer.prompt(searchColorQuery).then(async (answers) => {

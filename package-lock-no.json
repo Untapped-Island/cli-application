@@ -10,10 +10,11 @@
       "license": "MIT",
       "dependencies": {
         "@inquirer/checkbox": "^0.0.30-alpha.0",
-        "axios": "^1.0.0",
+        "axios": "^1.1.3",
         "dotenv": "^16.0.3",
         "inquirer": "^8.2.4"
-      }
+      },
+      "devDependencies": {}
     },
     "node_modules/@inquirer/checkbox": {
       "version": "0.0.30-alpha.0",
