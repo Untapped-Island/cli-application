@@ -1,52 +1,76 @@
-const inquirer = require('inquirer');
-const axios = require('axios');
+'use strict';
 
-const colorList = {
-  type: 'list',
-  name: 'listofcolors',
-  message: 'Which color is your card?',
-  choices: ['white', 'blue', 'black', 'red', 'green']
+require('dotenv').config()
+
+const inquirer = require('inquirer');
+const axios = require('axios')
+axios.defaults.baseURL = 'http://localhost:3000'
+
+async function getCardsByName(query) {
+  try {
+    const response = await axios.get(`/cards?search=${query}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getCardsByColor(colorInt) {
+  try {
+    const response = await axios.get(`/cards?colors=${colorInt}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getCardById(id) {
+  try {
+    const response = await axios.get(`/cards/${id}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function addCardToProfile(cardId, username) {
+  try {
+    const response = await axios.post(`users/${username}/cards`, {
+      card: cardId
+    })
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getEntirePortfolio(username) {
+  try {
+    const response = await axios.get(`/users/${username}/cards`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const userData = {
+  userId: null,
+  username: null,
+  token: null,
 };
 
-const magicTheGathering = {
-  type: 'list',
-  name: 'search',
-  message: 'Where are we looking?',
-  choices: ['database', 'portfolio']
-}
+// const magicTheGathering = {
+//   type: 'list',
+//   name: 'where',
+//   message: 'Where are we looking?',
+//   choices: ['database', 'portfolio']
+// }
 
 const searchCardQuery = {
   type: 'list',
-  name: 'card',
+  name: 'searchBy',
   message: 'How do you want to search?',
   choices: ['name', 'color']
-}
-
-
-const searchNameQuery = {
-  type: 'input',
-  name: 'input',
-  message: 'type the name of card',
-  choices: 'input'
-}
-
-const searchNameListQuery = {
-  type: 'list',
-  name: 'List of cards with input',
-  message: 'List of card(s) with similar name',
-  choices: ['{choice1}, {choice2}, {choice3}, {choice4}, {choice5}']
-}
-
-const confirmCard = {
-  type: 'confirm',
-  name: 'Is this the card?',
-  message: 'Is this the card you are looking for',
-}
-
-const confirmCardtoPortfolio = {
-  type: 'confirm',
-  name: 'Add to portfolio',
-  message: 'Add card to portfolio?',
 }
 
 const searchColorQuery = {
@@ -63,36 +87,96 @@ const colorConfirmation = {
 }
 
 function main() {
-  console.log('Welcome to the Untapped Island, Gather your cards and prepare for battle!');
+  console.log('Welcome to Untapped Island!');
   mainMenu();
 }
 main();
 
-// function userSignIn() {
+async function credentialsPrompt(isRegistering) {
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'Enter a username:'
+    },
+    {
+      type: 'password',
+      name: 'password',
+      message: 'Enter a password:'
+    }
+  ])
 
-// }
-
-function mainMenu() {
-  inquirer.prompt(magicTheGathering).then((answers) => {
-    if (answers.search === 'database') {
-      console.log('Look inside the database');
-      cardSearch();
-      // databaseSearch(‘https://ourislandsapi.com/cards/’);
+  try {
+    let response;
+    if (isRegistering) {
+      response = await axios.post('/signup', {
+        username: answers.username,
+        password: answers.password
+      })
     } else {
-      console.log('Look inside your portfolio');
-      cardSearch();
-      // portfolioSearch();
-    };
-  });
+      response = await axios({
+        method: 'post',
+        url: '/signin',
+        auth: {
+          username: answers.username,
+          password: answers.password
+        }
+      })
+    }
+    userData.userId = response.data.userId;
+    userData.username = response.data.user;
+    userData.token = response.data.accessToken;
+    axios.defaults.headers.common['Authorization'] = userData.token
+  } catch (err) {
+    console.error(err.response?.data.message || err)
+  }
+}
+
+
+async function mainMenu() {
+  while (!userData.token) {
+    const signinOrRegister = await inquirer.prompt({
+      type: 'list',
+      name: 'choice',
+      message: 'Login or register for a new account?',
+      choices: [{name: 'Login', value: false}, {name: 'Register', value: true}]
+    })
+    await credentialsPrompt(signinOrRegister.choice)
+  }
+
+  inquirer.prompt(
+    {
+      type: 'list',
+      name: 'where',
+      message: 'Select an option -',
+      choices: [{name: 'Search all cards', value: 'database'}, {name: 'Search my portfolio', value: 'portfolio'}]
+    })
+    .then(async (answers) => {
+      if (answers.where === 'database') {
+        console.log(answers);
+        cardSearch();
+      } else if (answers.where === 'portfolio') {
+        try {
+          const portfolio = await getEntirePortfolio(userData.username)
+          for (let data of portfolio.data) {
+            console.log(data.card.name)
+          }
+        } catch (err) {
+          console.error(err)
+        }
+        // console.log('Look inside your portfolio');
+        // portfolioSearch();
+      };
+    });
 }
 
 function cardSearch() {
   inquirer.prompt(searchCardQuery).then((answers) => {
-    if (answers.card === 'name') {
-      console.log(`Look for the card by name`);
+    if (answers.searchBy === 'name') {
+      console.log(answers);
       // databaseSearch();
       nameSearch();
-    } else if (answers.card === 'color') {
+    } else if (answers.searchBy === 'color') {
       console.log(`Look for the card by color`);
       // portfolioSearch();
       colorSearch();
@@ -100,41 +184,70 @@ function cardSearch() {
   });
 }
 
-function nameSearch() { // name
-  inquirer.prompt(searchNameQuery).then((answers) => {
-    console.log(answers)
-    nameListSearch();
+function nameSearch() {
+  inquirer.prompt({
+    type: 'input',
+    name: 'cardNameQuery',
+    message: 'type the name of card',
+    choices: 'input'
+  }).then(async (answers) => {
+    try {
+      const results = await getCardsByName(answers.cardNameQuery)
+      if (results.data.length !== 0) {
+        const parsedResults = results.data.map(result => {
+          return {
+            value: result.id,
+            name: result.name
+          }
+        })
+        nameListSearch(parsedResults);
+      } else {
+        nameSearch()
+      }
+    } catch (err) {
+      console.error(err)
+    }
   });
 };
 
-function nameListSearch() {
-  inquirer.prompt(searchNameListQuery).then((answers) => {
-    console.log(answers)
-    selectFromList();
+function nameListSearch(list) {
+  inquirer.prompt({
+    type: 'list',
+    name: 'card',
+    message: 'List of card(s) with similar name',
+    loop: false,
+    choices: list
+  }).then((answers) => {
+    selectFromList(answers.card);
   })
 }
 
-function selectFromList() {
-  inquirer.prompt(confirmCard).then((answers) => {
+async function selectFromList(cardId) {
+  const result = await getCardById(cardId)
+  console.log(result.data)
+  inquirer.prompt({
+    type: 'confirm',
+    name: 'confirmed',
+    message: 'Add card to portfolio?',
+  }).then((answers) => {
     console.log(answers)
-    cardFound();
-  })
-}
-function cardFound() {
-  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
-    console.log(answers)
-    anotherCardSearch()
-  })
-}
-function anotherCardSearch() {
-  inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
-    console.log(answers)
+    if (answers.confirmed) {
+      addCardToProfile(cardId, userData.username)
+    }
     mainMenu()
   })
 }
 
+
+// function anotherCardSearch() {
+//   inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
+//     console.log(answers)
+//     mainMenu()
+//   })
+// }
+
 function colorSearch() { // color
-  inquirer.prompt(searchColorQuery).then((answers) => {
+  inquirer.prompt(searchColorQuery).then(async (answers) => {
     console.log(answers.choice)
     const colorsEnum = {
       'Red': 1 << 0,
@@ -148,21 +261,31 @@ function colorSearch() { // color
       colors = colors | colorsEnum[color]
     })
     console.log(colors);
-    selectedColorSearch(colors);
+    const results = await getCardsByColor(colors)
+    const parsedResults = results.data.map(result => {
+      return {
+        value: result.id,
+        name: result.name
+      }
+    })
+    selectedColorSearch(parsedResults);
   });
 };
 
-const cardsByColorList = {
+const cardsByColorList = {   // Needs api call to database ---------------------------------------------
   type: 'list',
   name: 'List of cards with the same color',
   message: 'List of card(s) with the same color selected',
   // choices: [`${choice1}, ${choice2}, ${choice3}, ${choice4}, ${choice5}`]
-  choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
+  // choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
 }
 
-function selectedColorSearch(colors) {
+function selectedColorSearch(list) {
   // API CALL ---> Need the list of cards with the color selected..... The list of cards might be very very very long....
-  inquirer.prompt(cardsByColorList).then((answers) => {
+  inquirer.prompt({
+    ...cardsByColorList,
+    choices: list
+  }).then((answers) => {
     console.log(answers);
   })
 }
