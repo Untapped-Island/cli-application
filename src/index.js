@@ -33,19 +33,14 @@ async function getCardById(id) {
   }
 }
 
-// const colorList = {
-//   type: 'list',
-//   name: 'colorQuery',
-//   message: 'Which color is your card?',
-//   choices: ['white', 'blue', 'black', 'red', 'green']
-// };
+const userData = {};
 
-const magicTheGathering = {
-  type: 'list',
-  name: 'where',
-  message: 'Where are we looking?',
-  choices: ['database', 'portfolio']
-}
+// const magicTheGathering = {
+//   type: 'list',
+//   name: 'where',
+//   message: 'Where are we looking?',
+//   choices: ['database', 'portfolio']
+// }
 
 const searchCardQuery = {
   type: 'list',
@@ -93,22 +88,82 @@ function main() {
 }
 main();
 
-// function userSignIn() {
+async function userSignIn() {
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'Enter a username:'
+    },
+    {
+      type: 'password',
+      name: 'password',
+      message: 'Enter a password:'
+    }
+  ])
 
-// }
+  try {
+    const response = await axios({
+      method: 'post',
+      url: '/signin',
+      auth: {
+        username: answers.username,
+        password: answers.password
+      }
+    })
+    userData.user = response.user
+    userData.token = response.accessToken
+  } catch (err) {
+    console.error(err.response.data)
+  }
+}
 
-function mainMenu() {
-  inquirer.prompt(magicTheGathering).then((answers) => {
-    if (answers.where === 'database') {
-      console.log(answers);
-      cardSearch();
-      // databaseSearch(‘https://ourislandsapi.com/cards/’);
-    } else {
-      console.log('Look inside your portfolio');
-      cardSearch();
-      // portfolioSearch();
-    };
-  });
+async function userRegister() {
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'Enter a username:'
+    },
+    {
+      type: 'password',
+      name: 'password',
+      message: 'Enter a password:'
+    }
+  ])
+
+  const response = await axios.post('/signup', {
+    username: answers.username,
+    password: answers.password
+  })
+
+
+  userData.user = response.user
+  userData.token = response.accessToken
+}
+
+async function mainMenu() {
+  if (!userData.token) {
+    await userSignIn()
+  }
+  inquirer.prompt(
+    {
+      type: 'list',
+      name: 'where',
+      message: 'Where are we looking?',
+      choices: ['database', 'portfolio']
+    })
+    .then((answers) => {
+      if (answers.where === 'database') {
+        console.log(answers);
+        cardSearch();
+        // databaseSearch(‘https://ourislandsapi.com/cards/’);
+      } else {
+        console.log('Look inside your portfolio');
+        cardSearch();
+        // portfolioSearch();
+      };
+    });
 }
 
 function cardSearch() {
@@ -156,7 +211,6 @@ function nameListSearch(list) {
 }
 
 async function selectFromList(cardId) {
-  console.log(cardId)
   const result = await getCardById(cardId)
   console.log(result.data)
   inquirer.prompt(confirmCard).then((answers) => {
