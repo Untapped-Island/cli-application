@@ -24,6 +24,15 @@ async function getCardsByColor(colorInt) {
   }
 }
 
+async function getCardById(id) {
+  try {
+    const response = await axios.get(`/cards/${id}`);
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 // const colorList = {
 //   type: 'list',
 //   name: 'colorQuery',
@@ -146,8 +155,10 @@ function nameListSearch(list) {
   })
 }
 
-function selectFromList(card) {
-  console.log(card)
+async function selectFromList(cardId) {
+  console.log(cardId)
+  const result = await getCardById(cardId)
+  console.log(result.data)
   inquirer.prompt(confirmCard).then((answers) => {
     console.log(answers)
     cardFound();
