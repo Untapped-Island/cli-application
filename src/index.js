@@ -4,11 +4,11 @@ require('dotenv').config()
 
 const inquirer = require('inquirer');
 const axios = require('axios')
-axios.defaults.baseURL = 'http://localhost:3000'
+axios.defaults.baseURL = process.env.API_URL
 
 async function getCardsByName(query) {
   try {
-    const response = await axios.get(`/cards?search=${query}`);
+    const response = await axios.get(`/cards?search=${query}&limit=100`);
     return response
   } catch (err) {
     console.error(err)
@@ -17,7 +17,7 @@ async function getCardsByName(query) {
 
 async function getCardsByColor(colorInt) {
   try {
-    const response = await axios.get(`/cards?colors=${colorInt}`);
+    const response = await axios.get(`/cards?colors=${colorInt}&limit=200`);
     return response
   } catch (err) {
     console.error(err)
@@ -35,7 +35,6 @@ async function getCardById(id) {
 
 async function addCardToProfile(cardId, username) {
   try {
-    console.log(username)
     const response = await axios.post(`users/${username}/cards`, {
       card: cardId
     })
@@ -121,8 +120,6 @@ async function credentialsPrompt(isRegistering) {
     userData.userId = response.data.id;
     userData.username = response.data.user;
     userData.token = response.data.accessToken;
-    console.log(userData)
-    console.log(response.data)
     axios.defaults.headers.common['Authorization'] = userData.token
   } catch (err) {
     console.error(err.response?.data.message || err)
@@ -219,7 +216,6 @@ function nameListSearch(list) {
 
 async function selectFromList(cardId) {
   const result = await getCardById(cardId)
-  console.log(result.data)
   inquirer.prompt({
     type: 'confirm',
     name: 'confirmed',
@@ -266,18 +262,14 @@ function colorSearch() { // color
   });
 };
 
-const cardsByColorList = {   // Needs api call to database ---------------------------------------------
-  type: 'list',
-  name: 'List of cards with the same color',
-  message: 'List of card(s) with the same color selected',
-}
-
 function selectedColorSearch(list) {
-  // API CALL ---> Need the list of cards with the color selected..... The list of cards might be very very very long....
   inquirer.prompt({
-    ...cardsByColorList,
+    type: 'list',
+    name: 'card',
+    message: 'List of card(s) with matching colors',
+    loop: false,
     choices: list
   }).then((answers) => {
-    console.log(answers);
+    selectFromList(answers.card);
   })
 }
