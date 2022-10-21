@@ -4,7 +4,7 @@ require('dotenv').config()
 
 const inquirer = require('inquirer');
 const axios = require('axios')
-axios.defaults.baseURL = 'http://localhost:3000'
+axios.defaults.baseURL = process.env.API_URL
 
 async function getCardsByName(query) {
   try {
@@ -35,7 +35,6 @@ async function getCardById(id) {
 
 async function addCardToProfile(cardId, username) {
   try {
-    console.log(username)
     const response = await axios.post(`users/${username}/cards`, {
       card: cardId
     })
@@ -127,8 +126,6 @@ async function credentialsPrompt(isRegistering) {
     userData.userId = response.data.id;
     userData.username = response.data.user;
     userData.token = response.data.accessToken;
-    console.log(userData)
-    console.log(response.data)
     axios.defaults.headers.common['Authorization'] = userData.token
   } catch (err) {
     console.error(err.response?.data.message || err)
@@ -227,7 +224,6 @@ function nameListSearch(list) {
 
 async function selectFromList(cardId) {
   const result = await getCardById(cardId)
-  console.log(result.data)
   inquirer.prompt({
     type: 'confirm',
     name: 'confirmed',
