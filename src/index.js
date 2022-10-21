@@ -35,6 +35,7 @@ async function getCardById(id) {
 
 async function addCardToProfile(cardId, username) {
   try {
+    console.log(username)
     const response = await axios.post(`users/${username}/cards`, {
       card: cardId
     })
@@ -123,9 +124,11 @@ async function credentialsPrompt(isRegistering) {
         }
       })
     }
-    userData.userId = response.data.userId;
+    userData.userId = response.data.id;
     userData.username = response.data.user;
     userData.token = response.data.accessToken;
+    console.log(userData)
+    console.log(response.data)
     axios.defaults.headers.common['Authorization'] = userData.token
   } catch (err) {
     console.error(err.response?.data.message || err)
