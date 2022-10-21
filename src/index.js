@@ -59,12 +59,6 @@ const userData = {
   token: null,
 };
 
-// const magicTheGathering = {
-//   type: 'list',
-//   name: 'where',
-//   message: 'Where are we looking?',
-//   choices: ['database', 'portfolio']
-// }
 
 const searchCardQuery = {
   type: 'list',
@@ -174,11 +168,9 @@ function cardSearch() {
   inquirer.prompt(searchCardQuery).then((answers) => {
     if (answers.searchBy === 'name') {
       console.log(answers);
-      // databaseSearch();
       nameSearch();
     } else if (answers.searchBy === 'color') {
       console.log(`Look for the card by color`);
-      // portfolioSearch();
       colorSearch();
     };
   });
@@ -236,7 +228,6 @@ async function selectFromList(cardId) {
     mainMenu()
   })
 }
-
 
 // function anotherCardSearch() {
 //   inquirer.prompt(confirmCardtoPortfolio).then((answers) => {
