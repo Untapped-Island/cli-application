@@ -24,18 +24,6 @@ message:
 choices:
 
   ``` 
-1 inquirer.prompt([
-2  {
-3    name: 'greeting',
-4    message: 'What would you like to say?',
-5    type: 'input'
-6   }])
-7  .then(function(answer){
-8    console.log(answer);
-9  });
-  ``` 
-
-  ``` 
 inquirer
   .prompt([
     /* Pass your questions in here */
@@ -55,7 +43,7 @@ inquirer
 - [https://github.com/SBoudrias/Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
 - [https://www.npmjs.com/package/inquirer](https://www.npmjs.com/package/inquirer)
 
-![UML](./UntappedIsland%20(3).png)
+![UML](./assets/UntappedIsland%20(3).png)
 
 ## Setup
 
@@ -79,5 +67,5 @@ Stretch Goals would be to create routes for all colors (cards with dual or more 
 
 ## Structure Diagram
 <!-- Is there a diagram for this project? Should there be one? -->
-![UML](./UntappedIsland%20(2).png)
+![UML](./assets/UntappedIsland%20(2).png)
 
