@@ -8,7 +8,7 @@ axios.defaults.baseURL = process.env.API_URL
 
 async function getCardsByName(query) {
   try {
-    const response = await axios.get(`/cards?search=${query}`);
+    const response = await axios.get(`/cards?search=${query}&limit=100`);
     return response
   } catch (err) {
     console.error(err)
@@ -17,7 +17,7 @@ async function getCardsByName(query) {
 
 async function getCardsByColor(colorInt) {
   try {
-    const response = await axios.get(`/cards?colors=${colorInt}`);
+    const response = await axios.get(`/cards?colors=${colorInt}&limit=200`);
     return response
   } catch (err) {
     console.error(err)
@@ -271,20 +271,14 @@ function colorSearch() { // color
   });
 };
 
-const cardsByColorList = {   // Needs api call to database ---------------------------------------------
-  type: 'list',
-  name: 'List of cards with the same color',
-  message: 'List of card(s) with the same color selected',
-  // choices: [`${choice1}, ${choice2}, ${choice3}, ${choice4}, ${choice5}`]
-  // choices: ['Bathazar', 'MegaMan', 'Diablo', 'Boy', 'Dog']
-}
-
 function selectedColorSearch(list) {
-  // API CALL ---> Need the list of cards with the color selected..... The list of cards might be very very very long....
   inquirer.prompt({
-    ...cardsByColorList,
+    type: 'list',
+    name: 'card',
+    message: 'List of card(s) with matching colors',
+    loop: false,
     choices: list
   }).then((answers) => {
-    console.log(answers);
+    selectFromList(answers.card);
   })
 }
